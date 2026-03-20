@@ -784,12 +784,76 @@ Frame output as defensive intelligence, not offensive guidance.</span></div>
   </div>
 </div>
 
-<!-- ══ 14 GOVERNANCE ══ -->
+<!-- ══ 14 HALLUCINATIONS ══ -->
+<div class="slide seg-3" data-seg="3">
+  <div class="slide-header">
+    <span class="seg-badge">Risk</span>
+    <span class="slide-title">AI Hallucinations in Security — What Can Go Wrong</span>
+    <span class="slide-num">14 / 17</span>
+  </div>
+  <div class="full-body">
+
+    <div class="concept">
+      <div class="concept-label" style="color:var(--red)">What Is a Hallucination?</div>
+      <div class="concept-text">
+        An AI hallucination is when the model produces output that is <strong style="color:#fff">confidently stated but factually incorrect</strong> — fabricated CVE IDs, invented threat actor names, non-existent compliance clauses, or plausible-sounding but wrong technical steps. The model does not know it is wrong. It does not flag uncertainty. It presents the fabrication with the same tone as verified fact.
+      </div>
+    </div>
+
+    <!-- THREE RISK EXAMPLES -->
+    <div style="display:flex;gap:13px;">
+
+      <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--red);border-radius:0 0 4px 4px;padding:15px 16px;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.67rem;letter-spacing:.13em;color:var(--red);font-weight:600;margin-bottom:8px;text-transform:uppercase;">⚠ CVE & CVSS Scores</div>
+        <div style="font-size:.88rem;color:var(--text);font-weight:400;line-height:1.6;">
+          AI may generate plausible-looking CVE identifiers — e.g. <span class="hl" style="background:rgba(255,77,107,.12);color:var(--red)">CVE-2024-XXXXX</span> — that do not exist in the NVD. A patch decision based on a hallucinated CVE wastes resource and creates false assurance.<br/><br/>
+          <span style="color:var(--red);font-weight:500">Always verify:</span> Cross-check every CVE against NVD or vendor advisory before acting.
+        </div>
+      </div>
+
+      <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--warn);border-radius:0 0 4px 4px;padding:15px 16px;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.67rem;letter-spacing:.13em;color:var(--warn);font-weight:600;margin-bottom:8px;text-transform:uppercase;">⚠ Threat Actor Attribution</div>
+        <div style="font-size:.88rem;color:var(--text);font-weight:400;line-height:1.6;">
+          AI may confidently attribute an attack to a specific nation-state group based on partial IOC overlap — when the actual attribution is contested or unknown. Incorrect attribution can influence leadership decisions and regulatory reporting.<br/><br/>
+          <span style="color:var(--warn);font-weight:500">Always verify:</span> Attribution requires corroboration from threat intel feeds — never rely on AI alone.
+        </div>
+      </div>
+
+      <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--seg3);border-radius:0 0 4px 4px;padding:15px 16px;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.67rem;letter-spacing:.13em;color:var(--seg3);font-weight:600;margin-bottom:8px;text-transform:uppercase;">⚠ Regulatory References</div>
+        <div style="font-size:.88rem;color:var(--text);font-weight:400;line-height:1.6;">
+          AI may cite specific clauses from GDPR, RBI, or SEBI guidelines that are paraphrased incorrectly or do not exist verbatim. Regulatory submissions or board communications built on this content carry compliance risk.<br/><br/>
+          <span style="color:var(--seg3);font-weight:500">Always verify:</span> Any regulatory reference used in a formal communication must be confirmed with Legal or Compliance.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- HOW TO REDUCE HALLUCINATIONS -->
+    <div style="background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.2);border-left:3px solid var(--accent);border-radius:0 4px 4px 0;padding:14px 18px;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.67rem;letter-spacing:.13em;color:var(--accent);font-weight:600;margin-bottom:8px;text-transform:uppercase;">How to Reduce Hallucination Risk in Your Prompts</div>
+      <div style="display:flex;gap:24px;font-size:.9rem;color:var(--text);font-weight:400;line-height:1.65;">
+        <div style="flex:1;">
+          <strong style="color:#fff">Add the constraint:</strong> <span class="hl">"If you are uncertain, say so explicitly — do not infer."</span> This instructs the model to surface its own uncertainty rather than fill gaps with confident-sounding fabrication.
+        </div>
+        <div style="flex:1;">
+          <strong style="color:#fff">Ground the prompt in data:</strong> Provide the source material directly (paste the alert, the log, the policy text). AI hallucination rate drops significantly when it is summarising real input rather than recalling from training.
+        </div>
+        <div style="flex:1;">
+          <strong style="color:#fff">Never use AI as the sole source</strong> for CVEs, IOC attribution, or compliance clauses. Treat AI output as a starting hypothesis — analyst verification is the control that closes the risk.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ 15 GOVERNANCE ══ -->
 <div class="slide seg-3" data-seg="3">
   <div class="slide-header">
     <span class="seg-badge">Governance</span>
     <span class="slide-title">Using Copilot Responsibly — Three Rules for Security Teams</span>
-    <span class="slide-num">14 / 16</span>
+    <span class="slide-num">15 / 17</span>
   </div>
   <div class="full-body">
 
@@ -846,7 +910,7 @@ Frame output as defensive intelligence, not offensive guidance.</span></div>
   <div class="slide-header">
     <span class="seg-badge">CLOSE</span>
     <span class="slide-title">Strategic Takeaways & Recommended Roadmap</span>
-    <span class="slide-num">15 / 16</span>
+    <span class="slide-num">16 / 17</span>
   </div>
   <div class="slide-body">
     <div class="col-left">
