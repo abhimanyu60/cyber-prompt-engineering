@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Prompt Engineering Lab — Hands-On Training</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #05080f;
+  --surface:  #0a1220;
+  --card:     #0e1a2e;
+  --border:   #1c3a5a;
+  --accent:   #00c8f0;
+  --green:    #00e887;
+  --orange:   #ff7a35;
+  --red:      #ff3d6b;
+  --yellow:   #ffd24d;
+  --text:     #cde4f5;
+  --muted:    #5a8aaa;
+  --white:    #f0f8ff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* scanline */
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.04) 3px,rgba(0,0,0,.04) 4px);pointer-events:none;z-index:9999}
+
+/* ── TOPBAR ── */
+#topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;display:flex;align-items:center;gap:0;height:56px;position:sticky;top:0;z-index:100}
+.tb-logo{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-right:32px}
+.tb-tabs{display:flex;height:100%}
+.tb-tab{height:100%;padding:0 20px;display:flex;align-items:center;font-size:.82rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;transition:all .2s;white-space:nowrap}
+.tb-tab:hover{color:var(--text)}
+.tb-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tb-right{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--muted);letter-spacing:.08em}
+
+/* ── SECTIONS ── */
+.section{display:none;padding:36px 40px 60px;max-width:1200px;margin:0 auto}
+.section.active{display:block}
+
+/* ── SECTION HEADER ── */
+.sec-head{margin-bottom:28px}
+.sec-tag{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;font-weight:600}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:2.2rem;font-weight:800;letter-spacing:.02em;color:var(--white);line-height:1}
+.sec-sub{font-size:.95rem;color:var(--muted);margin-top:8px;line-height:1.6;font-weight:400}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:20px 22px}
+.card-label{font-family:'IBM Plex Mono',monospace;font-size:.67rem;letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-bottom:10px}
+
+/* ── GRID LAYOUTS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* ── STATION BADGE ── */
+.station-badge{display:inline-flex;align-items:center;gap:10px;background:rgba(0,200,240,.08);border:1px solid rgba(0,200,240,.25);border-radius:4px;padding:6px 16px;margin-bottom:22px}
+.station-num{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;font-weight:600;color:var(--accent);line-height:1}
+.station-name{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+
+/* ── RCTF BUILDER ── */
+.rctf-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.rctf-field{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:border-color .2s}
+.rctf-field:focus-within{border-color:var(--accent)}
+.rctf-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.rctf-letter{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:800;width:28px;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.r-r .rctf-letter{background:rgba(0,200,240,.15);color:var(--accent)}
+.r-c .rctf-letter{background:rgba(0,232,135,.15);color:var(--green)}
+.r-t .rctf-letter{background:rgba(255,122,53,.15);color:var(--orange)}
+.r-f .rctf-letter{background:rgba(255,61,107,.15);color:var(--red)}
+.rctf-hlabel{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.r-r .rctf-hlabel{color:var(--accent)} .r-c .rctf-hlabel{color:var(--green)} .r-t .rctf-hlabel{color:var(--orange)} .r-f .rctf-hlabel{color:var(--red)}
+.rctf-hint{font-size:.78rem;color:var(--muted);margin-left:auto;font-weight:400}
+.rctf-field textarea{width:100%;background:transparent;border:none;outline:none;padding:12px 14px;color:var(--text);font-size:.88rem;font-family:'Barlow',sans-serif;line-height:1.6;resize:none;min-height:80px;font-weight:400}
+.rctf-field textarea::placeholder{color:var(--muted)}
+
+/* assembled prompt */
+.prompt-out{background:#020c18;border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.prompt-out-bar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
+.pob-dot{width:8px;height:8px;border-radius:50%}
+.pob-label{font-family:'IBM Plex Mono',monospace;font-size:.67rem;color:var(--muted);letter-spacing:.1em;flex:1}
+.copy-btn{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(0,200,240,.1);border:1px solid rgba(0,200,240,.3);color:var(--accent);padding:4px 12px;border-radius:3px;cursor:pointer;transition:all .2s;font-weight:600}
+.copy-btn:hover{background:rgba(0,200,240,.2)}
+.copy-btn.copied{background:rgba(0,232,135,.1);border-color:rgba(0,232,135,.3);color:var(--green)}
+#assembled-prompt{padding:16px 18px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;line-height:1.85;color:#b8dff5;white-space:pre-wrap;min-height:80px}
+.prompt-placeholder{color:var(--muted);font-style:italic}
+
+/* score bar */
+.score-row{display:flex;align-items:center;gap:12px;margin-top:14px}
+.score-label{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em;white-space:nowrap}
+.score-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.score-fill{height:100%;border-radius:3px;transition:width .5s ease;background:var(--accent)}
+.score-pct{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent);font-weight:600;min-width:36px;text-align:right}
+.score-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.score-pill{font-family:'IBM Plex Mono',monospace;font-size:.65rem;padding:3px 10px;border-radius:12px;letter-spacing:.08em}
+.sp-done{background:rgba(0,232,135,.12);color:var(--green);border:1px solid rgba(0,232,135,.3)}
+.sp-miss{background:rgba(255,61,107,.1);color:var(--red);border:1px solid rgba(255,61,107,.25)}
+
+/* ── SCENARIO LAB ── */
+.scenario-tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.sc-tab{font-size:.8rem;font-weight:600;padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .2s;letter-spacing:.04em}
+.sc-tab:hover{color:var(--text);border-color:var(--muted)}
+.sc-tab.active{background:rgba(0,200,240,.1);border-color:var(--accent);color:var(--accent)}
+.scenario-body{display:none}
+.scenario-body.active{display:block}
+.scenario-situation{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:0 4px 4px 0;padding:14px 18px;margin-bottom:16px;font-size:.92rem;line-height:1.65;color:var(--text);font-weight:400}
+.scenario-situation strong{color:var(--white)}
+.sc-task{background:rgba(255,210,77,.06);border:1px solid rgba(255,210,77,.2);border-radius:4px;padding:12px 16px;margin-bottom:16px;font-size:.88rem;color:var(--yellow);font-weight:500;font-family:'IBM Plex Mono',monospace;letter-spacing:.03em}
+
+/* weak/strong compare */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.compare-box{border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.compare-head{padding:9px 14px;font-family:'IBM Plex Mono',monospace;font-size:.67rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.ch-weak{background:rgba(255,61,107,.1);color:var(--red);border-bottom:1px solid rgba(255,61,107,.2)}
+.ch-strong{background:rgba(0,232,135,.08);color:var(--green);border-bottom:1px solid rgba(0,232,135,.2)}
+.compare-content{padding:13px 15px;font-family:'IBM Plex Mono',monospace;font-size:.8rem;line-height:1.75;background:#020c18;color:#b8dff5;white-space:pre-wrap}
+
+/* user prompt area */
+.user-prompt-area{background:#020c18;border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.upa-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border)}
+.upa-label{font-family:'IBM Plex Mono',monospace;font-size:.67rem;color:var(--muted);letter-spacing:.1em;flex:1}
+.user-prompt-area textarea{width:100%;background:transparent;border:none;outline:none;padding:14px 16px;color:var(--text);font-size:.88rem;font-family:'IBM Plex Mono',monospace;line-height:1.75;resize:vertical;min-height:130px;font-weight:400}
+.user-prompt-area textarea::placeholder{color:var(--muted)}
+
+/* action buttons */
+.btn-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:9px 20px;border-radius:4px;cursor:pointer;transition:all .2s;font-weight:600;border:1px solid}
+.btn-primary{background:rgba(0,200,240,.12);border-color:rgba(0,200,240,.4);color:var(--accent)}
+.btn-primary:hover{background:rgba(0,200,240,.22)}
+.btn-green{background:rgba(0,232,135,.1);border-color:rgba(0,232,135,.35);color:var(--green)}
+.btn-green:hover{background:rgba(0,232,135,.2)}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--muted)}
+.btn-ghost:hover{color:var(--text);border-color:var(--muted)}
+
+/* feedback box */
+.feedback-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:14px 18px;margin-top:12px;display:none}
+.feedback-box.visible{display:block}
+.fb-title{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;font-weight:600;margin-bottom:8px}
+.fb-text{font-size:.9rem;color:var(--text);line-height:1.65;font-weight:400}
+.fb-text strong{color:var(--white)}
+
+/* model answer */
+.model-answer{background:#010a14;border:1px solid rgba(0,232,135,.25);border-radius:4px;overflow:hidden;margin-top:12px;display:none}
+.model-answer.visible{display:block}
+.ma-bar{padding:8px 14px;background:rgba(0,232,135,.06);border-bottom:1px solid rgba(0,232,135,.15);font-family:'IBM Plex Mono',monospace;font-size:.67rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.ma-content{padding:14px 16px;font-family:'IBM Plex Mono',monospace;font-size:.8rem;line-height:1.8;color:#a8e8d0;white-space:pre-wrap}
+
+/* ── HALLUCINATION QUIZ ── */
+.quiz-item{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:18px 20px;margin-bottom:14px}
+.quiz-q{font-size:.95rem;font-weight:500;color:var(--white);margin-bottom:14px;line-height:1.55}
+.quiz-q .suspect{font-family:'IBM Plex Mono',monospace;background:rgba(255,61,107,.1);color:var(--red);padding:2px 6px;border-radius:2px;font-size:.88em}
+.quiz-options{display:flex;flex-direction:column;gap:8px}
+.quiz-opt{display:flex;align-items:flex-start;gap:12px;padding:11px 15px;background:var(--surface);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text);line-height:1.5}
+.quiz-opt:hover{border-color:var(--muted)}
+.quiz-opt.selected-correct{background:rgba(0,232,135,.08);border-color:rgba(0,232,135,.4);color:var(--green)}
+.quiz-opt.selected-wrong{background:rgba(255,61,107,.08);border-color:rgba(255,61,107,.4);color:var(--red)}
+.quiz-opt.reveal-correct{background:rgba(0,232,135,.06);border-color:rgba(0,232,135,.3)}
+.opt-key{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:700;width:22px;flex-shrink:0;margin-top:1px}
+.quiz-explain{margin-top:10px;padding:10px 14px;background:rgba(0,200,240,.05);border-left:2px solid var(--accent);border-radius:0 3px 3px 0;font-size:.85rem;color:var(--muted);line-height:1.6;display:none}
+.quiz-explain.visible{display:block}
+.quiz-score-bar{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:20px}
+.qs-num{font-family:'Barlow Condensed',sans-serif;font-size:2.5rem;font-weight:800;color:var(--accent);line-height:1}
+.qs-label{font-size:.88rem;color:var(--muted);font-weight:400}
+
+/* ── PROMPT DOCTOR ── */
+.pd-input{background:#020c18;border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.pd-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--surface);border-bottom:1px solid var(--border)}
+.pd-bar-label{font-family:'IBM Plex Mono',monospace;font-size:.67rem;color:var(--muted);letter-spacing:.1em;flex:1}
+.pd-input textarea{width:100%;background:transparent;border:none;outline:none;padding:14px 16px;color:var(--text);font-size:.88rem;font-family:'IBM Plex Mono',monospace;line-height:1.75;resize:vertical;min-height:110px}
+.pd-input textarea::placeholder{color:var(--muted)}
+.pd-results{margin-top:14px}
+.pd-result-row{display:flex;align-items:center;gap:12px;padding:11px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:8px}
+.pd-icon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;font-weight:700}
+.icon-pass{background:rgba(0,232,135,.15);color:var(--green)}
+.icon-fail{background:rgba(255,61,107,.12);color:var(--red)}
+.icon-warn{background:rgba(255,210,77,.12);color:var(--yellow)}
+.pd-rname{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;width:100px;flex-shrink:0}
+.pd-rdesc{font-size:.87rem;color:var(--text);flex:1;line-height:1.5}
+.pd-suggestion{font-size:.82rem;color:var(--muted);margin-top:4px}
+
+/* ── CHEATSHEET ── */
+.cheat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cheat-card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:18px 20px}
+.cheat-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:.04em;margin-bottom:12px}
+.cheat-row{display:flex;gap:10px;margin-bottom:8px;font-size:.87rem;line-height:1.5}
+.cheat-key{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--accent);flex-shrink:0;margin-top:2px;font-weight:600}
+.cheat-val{color:var(--text);font-weight:400}
+.cheat-val strong{color:var(--white)}
+.template-box{background:#020c18;border:1px solid var(--border);border-radius:4px;padding:14px 16px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;line-height:1.85;color:#a8d4f0;position:relative}
+.t-r{color:var(--accent)} .t-c{color:var(--green)} .t-t{color:var(--orange)} .t-f{color:var(--red)}
+.cheat-copy{position:absolute;top:10px;right:10px;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;background:rgba(0,200,240,.1);border:1px solid rgba(0,200,240,.25);color:var(--accent);padding:3px 10px;border-radius:2px;cursor:pointer;transition:all .2s}
+.cheat-copy:hover{background:rgba(0,200,240,.2)}
+.cheat-copy.copied{background:rgba(0,232,135,.1);border-color:rgba(0,232,135,.25);color:var(--green)}
+
+/* hallucination prevention panel */
+.hal-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px}
+.hal-card{background:var(--card);border:1px solid var(--border);border-top:3px solid;border-radius:0 0 6px 6px;padding:15px 16px}
+.hal-card.hc-1{border-top-color:var(--red)} .hal-card.hc-2{border-top-color:var(--orange)} .hal-card.hc-3{border-top-color:var(--yellow)}
+.hal-card-title{font-family:'IBM Plex Mono',monospace;font-size:.67rem;letter-spacing:.13em;text-transform:uppercase;font-weight:600;margin-bottom:8px}
+.hc-1 .hal-card-title{color:var(--red)} .hc-2 .hal-card-title{color:var(--orange)} .hc-3 .hal-card-title{color:var(--yellow)}
+.hal-card-text{font-size:.87rem;color:var(--text);line-height:1.6;font-weight:400}
+
+/* divider */
+.divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+
+/* tag */
+.tag{font-family:'IBM Plex Mono',monospace;font-size:.65rem;padding:3px 10px;border-radius:12px;letter-spacing:.08em;font-weight:600;display:inline-block}
+.tag-new{background:rgba(0,232,135,.1);color:var(--green);border:1px solid rgba(0,232,135,.3)}
+.tag-tip{background:rgba(0,200,240,.1);color:var(--accent);border:1px solid rgba(0,200,240,.3)}
+
+/* progress indicator */
+.progress-row{display:flex;gap:8px;align-items:center;margin-bottom:24px}
+.prog-step{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:600;letter-spacing:.05em;border:1px solid var(--border);color:var(--muted);background:var(--surface)}
+.prog-step.done{background:rgba(0,232,135,.08);border-color:rgba(0,232,135,.3);color:var(--green)}
+.prog-step.current{background:rgba(0,200,240,.1);border-color:rgba(0,200,240,.35);color:var(--accent)}
+.prog-arrow{color:var(--border);font-size:.8rem}
+
+/* responsive tweaks */
+@media(max-width:900px){.grid-2,.rctf-grid,.compare-grid,.cheat-grid{grid-template-columns:1fr}.grid-3,.hal-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="tb-logo">⬡ Prompt Lab</div>
+  <div class="tb-tabs">
+    <div class="tb-tab active" onclick="switchTab('builder',this)">① RCTF Builder</div>
+    <div class="tb-tab" onclick="switchTab('scenarios',this)">② Scenario Lab</div>
+    <div class="tb-tab" onclick="switchTab('doctor',this)">③ Prompt Doctor</div>
+    <div class="tb-tab" onclick="switchTab('hallucinations',this)">④ Hallucination Quiz</div>
+    <div class="tb-tab" onclick="switchTab('cheatsheet',this)">⑤ Cheat Sheet</div>
+  </div>
+  <div class="tb-right">M365 Copilot · Cyber Training Lab</div>
+</div>
+
+<!-- ════════════════════════════════════════
+     STATION 1 — RCTF BUILDER
+════════════════════════════════════════ -->
+<div class="section active" id="tab-builder">
+  <div class="sec-head">
+    <div class="sec-tag">Station 01</div>
+    <div class="sec-title">RCTF Prompt Builder</div>
+    <div class="sec-sub">Fill in each component. Watch your prompt assemble in real time. Score shows how complete your prompt is.</div>
+  </div>
+
+  <div class="rctf-grid">
+    <!-- ROLE -->
+    <div class="rctf-field r-r">
+      <div class="rctf-head">
+        <div class="rctf-letter">R</div>
+        <div class="rctf-hlabel">Role</div>
+        <div class="rctf-hint">Who is the AI?</div>
+      </div>
+      <textarea id="rctf-r" placeholder="e.g. You are a senior SOC analyst specialising in insider threat detection…" oninput="assemblePrompt()" rows="3"></textarea>
+    </div>
+    <!-- CONTEXT -->
+    <div class="rctf-field r-c">
+      <div class="rctf-head">
+        <div class="rctf-letter">C</div>
+        <div class="rctf-hlabel">Context</div>
+        <div class="rctf-hint">What's the situation?</div>
+      </div>
+      <textarea id="rctf-c" placeholder="e.g. We have received 45 Defender alerts in the last 6 hours across our Azure AD tenant. The alerts involve unusual sign-in activity from multiple countries…" oninput="assemblePrompt()" rows="3"></textarea>
+    </div>
+    <!-- TASK -->
+    <div class="rctf-field r-t">
+      <div class="rctf-head">
+        <div class="rctf-letter">T</div>
+        <div class="rctf-hlabel">Task</div>
+        <div class="rctf-hint">What exactly should it do?</div>
+      </div>
+      <textarea id="rctf-t" placeholder="e.g. Classify each alert as Critical / High / Medium / Low. For each, provide one-sentence reasoning. Flag any that show signs of credential stuffing or account takeover…" oninput="assemblePrompt()" rows="3"></textarea>
+    </div>
+    <!-- FORMAT -->
+    <div class="rctf-field r-f">
+      <div class="rctf-head">
+        <div class="rctf-letter">F</div>
+        <div class="rctf-hlabel">Format</div>
+        <div class="rctf-hint">How should it respond?</div>
+      </div>
+      <textarea id="rctf-f" placeholder="e.g. Return a markdown table with columns: Alert ID | Severity | Verdict | One-line Reason. Maximum 200 words total…" oninput="assemblePrompt()" rows="3"></textarea>
+    </div>
+  </div>
+
+  <!-- ADD CONSTRAINT -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-label" style="color:var(--yellow)">+ Optional: Add Constraints</div>
+    <textarea id="rctf-constraints" style="width:100%;background:transparent;border:none;outline:none;color:var(--text);font-size:.88rem;font-family:'IBM Plex Mono',monospace;line-height:1.7;resize:none;min-height:60px" placeholder="e.g. If data is insufficient, state that — do not infer. Only reference data provided. Do not make attribution claims without evidence. Max 5 bullet points." oninput="assemblePrompt()"></textarea>
+  </div>
+
+  <!-- ASSEMBLED PROMPT -->
+  <div class="prompt-out">
+    <div class="prompt-out-bar">
+      <div class="pob-dot" style="background:var(--red)"></div>
+      <div class="pob-dot" style="background:var(--orange)"></div>
+      <div class="pob-dot" style="background:var(--green)"></div>
+      <div class="pob-label">ASSEMBLED PROMPT — LIVE PREVIEW</div>
+      <button class="copy-btn" id="copy-assembled" onclick="copyAssembled()">Copy</button>
+    </div>
+    <div id="assembled-prompt"><span class="prompt-placeholder">Your assembled prompt will appear here as you fill in the fields above…</span></div>
+  </div>
+
+  <!-- SCORE -->
+  <div class="score-row">
+    <span class="score-label">PROMPT COMPLETENESS</span>
+    <div class="score-track"><div class="score-fill" id="score-fill" style="width:0%"></div></div>
+    <span class="score-pct" id="score-pct">0%</span>
+  </div>
+  <div class="score-pills" id="score-pills"></div>
+
+  <hr class="divider"/>
+
+  <!-- QUICK STARTER TEMPLATES -->
+  <div class="sec-tag" style="margin-bottom:12px">Quick Starters — Click to Load</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn btn-ghost" onclick="loadTemplate('phishing')">Phishing Triage</button>
+    <button class="btn btn-ghost" onclick="loadTemplate('intel')">Threat Intel Digest</button>
+    <button class="btn btn-ghost" onclick="loadTemplate('incident')">Incident Report</button>
+    <button class="btn btn-ghost" onclick="loadTemplate('policy')">Policy Gap Review</button>
+    <button class="btn btn-ghost" onclick="loadTemplate('brief')">Executive Brief</button>
+    <button class="btn btn-ghost" onclick="clearAll()">✕ Clear All</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     STATION 2 — SCENARIO LAB
+════════════════════════════════════════ -->
+<div class="section" id="tab-scenarios">
+  <div class="sec-head">
+    <div class="sec-tag">Station 02</div>
+    <div class="sec-title">Scenario Lab</div>
+    <div class="sec-sub">Real security situations. Build a prompt from scratch, then compare against the model answer. No copy-paste — write it yourself.</div>
+  </div>
+
+  <div class="scenario-tabs">
+    <div class="sc-tab active" onclick="switchScenario('s1',this)">Scenario 1 · Phishing Wave</div>
+    <div class="sc-tab" onclick="switchScenario('s2',this)">Scenario 2 · Insider Threat</div>
+    <div class="sc-tab" onclick="switchScenario('s3',this)">Scenario 3 · Ransomware IOCs</div>
+    <div class="sc-tab" onclick="switchScenario('s4',this)">Scenario 4 · Threat Intel</div>
+    <div class="sc-tab" onclick="switchScenario('s5',this)">Scenario 5 · Board Brief</div>
+  </div>
+
+  <!-- SCENARIO 1 -->
+  <div class="scenario-body active" id="sc-s1">
+    <div class="scenario-situation"><strong>Situation:</strong> Your SOC has received 80 emails forwarded to the shared security mailbox over the past 48 hours, flagged by employees as suspicious. The emails claim to be from your IT helpdesk asking users to verify credentials before an "emergency system maintenance." Several employees have already clicked the link. You need to assess the scale and nature of this campaign before escalating.</div>
+    <div class="sc-task">⟶ Your task: Write a Copilot prompt to analyse this phishing campaign. Use RCTF. Add at least one constraint.</div>
+    <div class="user-prompt-area">
+      <div class="upa-bar"><div class="pob-dot" style="background:var(--orange)"></div><div class="upa-label">YOUR PROMPT — TYPE HERE</div></div>
+      <textarea id="sc-s1-input" placeholder="Write your prompt here…"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkScenario('s1')">Analyse My Prompt</button>
+      <button class="btn btn-green" onclick="toggleModel('s1')">Show Model Answer</button>
+      <button class="btn btn-ghost" onclick="clearScenario('s1')">Clear</button>
+    </div>
+    <div class="feedback-box" id="sc-s1-feedback"><div class="fb-title" style="color:var(--accent)">Prompt Analysis</div><div class="fb-text" id="sc-s1-fbtext"></div></div>
+    <div class="model-answer" id="sc-s1-model">
+      <div class="ma-bar">✓ Model Answer</div>
+      <div class="ma-content">You are a phishing campaign analyst.
+
+Context: 80 emails have been forwarded to the Security mailbox over the past 48 hours. The emails impersonate our IT helpdesk and direct users to a credential verification page ahead of an "emergency maintenance window." Multiple employees report clicking the link.
+
+Task:
+1. Identify the common indicators of compromise across these emails — sender domain patterns, subject line variations, link domains, and urgency language used.
+2. Estimate the likely number of users exposed based on click patterns.
+3. Classify the campaign as Targeted / Broad Spray / Spear Phish with reasoning.
+4. Recommend the immediate containment action (block sender domain, revoke sessions, notify users, or escalate to IR team).
+
+Constraints:
+- Flag patterns only — do not assume breach without evidence
+- If data is insufficient to conclude, state that explicitly
+- Do not reference data outside this email batch
+
+Format: Summary paragraph (3 sentences), then a structured table:
+Indicator Type | Value | Frequency | Risk Signal</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO 2 -->
+  <div class="scenario-body" id="sc-s2">
+    <div class="scenario-situation"><strong>Situation:</strong> A senior developer in your payments team submitted resignation 3 weeks ago. Their last working day is in 4 days. Your DLP system has flagged an unusual spike in file access events from their account in the last 72 hours — including access to documentation outside their normal project scope and two large archive files created in a personal OneDrive folder. No policy violation has been confirmed yet.</div>
+    <div class="sc-task">⟶ Your task: Write a Copilot prompt to review the DLP log and assess the risk. Make sure your constraints protect the organisation legally.</div>
+    <div class="user-prompt-area">
+      <div class="upa-bar"><div class="pob-dot" style="background:var(--orange)"></div><div class="upa-label">YOUR PROMPT — TYPE HERE</div></div>
+      <textarea id="sc-s2-input" placeholder="Write your prompt here…"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkScenario('s2')">Analyse My Prompt</button>
+      <button class="btn btn-green" onclick="toggleModel('s2')">Show Model Answer</button>
+      <button class="btn btn-ghost" onclick="clearScenario('s2')">Clear</button>
+    </div>
+    <div class="feedback-box" id="sc-s2-feedback"><div class="fb-title" style="color:var(--accent)">Prompt Analysis</div><div class="fb-text" id="sc-s2-fbtext"></div></div>
+    <div class="model-answer" id="sc-s2-model">
+      <div class="ma-bar">✓ Model Answer</div>
+      <div class="ma-content">You are a DLP analyst conducting a pre-departure access review.
+
+Context: A payments team developer has submitted resignation with 4 days remaining. DLP has flagged anomalous file access in the last 72 hours — including out-of-scope documentation and two large archive files created in personal OneDrive.
+
+Task: Review the attached DLP access log and identify:
+1. Total volume of file access events vs this user's 30-day baseline — is the spike statistically significant?
+2. Files accessed outside normal project scope — list by name, sensitivity label, and access time.
+3. The two archive files — assess size, content type if available, and destination (OneDrive personal vs shared).
+4. Any access during non-business hours or from unusual device/location.
+
+Constraints:
+- Flag behavioural patterns only — do not draw conclusions on intent or motive
+- Do not use language that implies misconduct — this is a risk assessment, not an investigation finding
+- Note any access that has a plausible legitimate explanation (project handover, documentation duties)
+- Output will be used by HR and Legal — maintain neutral, factual language throughout
+
+Format: Risk rating (High / Medium / Low) with one-paragraph justification, followed by evidence table:
+File Name | Sensitivity | Access Time | Risk Signal | Benign Explanation Possible?</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO 3 -->
+  <div class="scenario-body" id="sc-s3">
+    <div class="scenario-situation"><strong>Situation:</strong> Your organisation was hit by a ransomware attempt that was contained at the perimeter. The SOC has produced a raw incident report containing a mix of log entries, analyst notes, and system outputs. It contains multiple IP addresses, file hashes, domain names, and registry keys. You need to extract, structure, and enrich this IOC data so it can be fed into your SIEM detection rules.</div>
+    <div class="sc-task">⟶ Your task: Write a chained prompt sequence (at least 3 steps) to extract IOCs, enrich them, and produce a SIEM-ready output.</div>
+    <div class="user-prompt-area">
+      <div class="upa-bar"><div class="pob-dot" style="background:var(--orange)"></div><div class="upa-label">YOUR PROMPT CHAIN — TYPE HERE</div></div>
+      <textarea id="sc-s3-input" placeholder="Write Step 1, Step 2, Step 3… prompts here. Label each step clearly." style="min-height:160px"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkScenario('s3')">Analyse My Prompt</button>
+      <button class="btn btn-green" onclick="toggleModel('s3')">Show Model Answer</button>
+      <button class="btn btn-ghost" onclick="clearScenario('s3')">Clear</button>
+    </div>
+    <div class="feedback-box" id="sc-s3-feedback"><div class="fb-title" style="color:var(--accent)">Prompt Analysis</div><div class="fb-text" id="sc-s3-fbtext"></div></div>
+    <div class="model-answer" id="sc-s3-model">
+      <div class="ma-bar">✓ Model Answer — 3-Step Chain</div>
+      <div class="ma-content">STEP 1 — EXTRACT
+You are a SOC analyst. Extract all IOCs from the attached incident report.
+Categorise each as: IP Address / File Hash (with algorithm) / Domain / Registry Key / File Path.
+Output as clean JSON. Flag any IOC that appears more than once as HIGH FREQUENCY.
+Do not include analyst commentary — structured data only.
+
+---
+
+STEP 2 — ENRICH
+[Paste Step 1 output here]
+You are a threat intelligence analyst. For each IOC in this list:
+1. Map to any known threat actor group or malware family based on your knowledge (confidence: High / Medium / Low / Unknown)
+2. Identify the likely role of this IOC in the attack chain (C2 / payload delivery / lateral movement / persistence)
+3. Flag any IOC that matches known ransomware infrastructure patterns.
+Output: Enriched JSON — add fields: threat_actor, malware_family, attack_role, confidence.
+
+---
+
+STEP 3 — SIEM OUTPUT
+[Paste Step 2 output here]
+Convert this enriched IOC list into a SIEM detection rule brief.
+For each HIGH confidence IOC, produce: Detection rule description | Suggested log source | Recommended alert severity.
+Format: Markdown table ready for import to detection backlog.
+Flag any IOC where evidence is insufficient — mark as NEEDS VERIFICATION.</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO 4 -->
+  <div class="scenario-body" id="sc-s4">
+    <div class="scenario-situation"><strong>Situation:</strong> It is Monday morning. Your threat intel team has received 4 vendor bulletins over the weekend: a CISA advisory on a zero-day in a VPN product, a Microsoft Patch Tuesday preview, a ISAC alert on a financial-sector phishing campaign, and a research report on a new supply chain attack technique targeting CI/CD pipelines. You run Azure AD, M365, GitHub Actions for CI/CD, and Palo Alto VPN.</div>
+    <div class="sc-task">⟶ Your task: Write an environment-anchored prompt that filters and prioritises these 4 bulletins specifically for your technology stack.</div>
+    <div class="user-prompt-area">
+      <div class="upa-bar"><div class="pob-dot" style="background:var(--orange)"></div><div class="upa-label">YOUR PROMPT — TYPE HERE</div></div>
+      <textarea id="sc-s4-input" placeholder="Write your prompt here…"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkScenario('s4')">Analyse My Prompt</button>
+      <button class="btn btn-green" onclick="toggleModel('s4')">Show Model Answer</button>
+      <button class="btn btn-ghost" onclick="clearScenario('s4')">Clear</button>
+    </div>
+    <div class="feedback-box" id="sc-s4-feedback"><div class="fb-title" style="color:var(--accent)">Prompt Analysis</div><div class="fb-text" id="sc-s4-fbtext"></div></div>
+    <div class="model-answer" id="sc-s4-model">
+      <div class="ma-bar">✓ Model Answer</div>
+      <div class="ma-content">You are a senior threat intelligence analyst.
+
+Environment profile:
+- Industry: Financial Services (regulated — GDPR, RBI)
+- Stack: Azure AD (SSO), M365, GitHub Actions (CI/CD), Palo Alto GlobalProtect VPN
+- Crown jewels: Customer PII database, Trading platform, Core Banking system
+- MFA: Enabled for 85% of users
+
+Task: Review these 4 threat bulletins received this weekend. For each bulletin:
+1. Does this threat directly target technology in our stack? (Yes / Partial / No)
+2. If yes — what is the specific attack vector and which of our systems is at risk?
+3. What is the potential blast radius if exploited in our environment?
+4. What is the recommended immediate action? (Patch now / Monitor / Investigate / No action)
+5. Is this relevant to our regulatory obligations?
+
+Constraint: If a bulletin targets systems we do not run, mark as NOT APPLICABLE and move on — do not pad the analysis.
+
+Format: One card per bulletin (max 6 lines each). Lead with urgency flag: 🔴 Critical · 🟡 Monitor · 🟢 Low. End with a ranked action list — what to do first thing Monday morning.</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO 5 -->
+  <div class="scenario-body" id="sc-s5">
+    <div class="scenario-situation"><strong>Situation:</strong> At 02:30 last night, an attacker successfully exfiltrated approximately 12,000 customer records from a read-only database replica before the connection was terminated by your automated response system. The records include names, email addresses, and partial payment card data (last 4 digits only — no full PANs). The incident is contained. Your CISO needs to brief the Board at 09:00 this morning.</div>
+    <div class="sc-task">⟶ Your task: Write a prompt that converts the SOC incident summary into a Board-level communication. The tone must be calm, authoritative, and action-first.</div>
+    <div class="user-prompt-area">
+      <div class="upa-bar"><div class="pob-dot" style="background:var(--orange)"></div><div class="upa-label">YOUR PROMPT — TYPE HERE</div></div>
+      <textarea id="sc-s5-input" placeholder="Write your prompt here…"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="checkScenario('s5')">Analyse My Prompt</button>
+      <button class="btn btn-green" onclick="toggleModel('s5')">Show Model Answer</button>
+      <button class="btn btn-ghost" onclick="clearScenario('s5')">Clear</button>
+    </div>
+    <div class="feedback-box" id="sc-s5-feedback"><div class="fb-title" style="color:var(--accent)">Prompt Analysis</div><div class="fb-text" id="sc-s5-fbtext"></div></div>
+    <div class="model-answer" id="sc-s5-model">
+      <div class="ma-bar">✓ Model Answer</div>
+      <div class="ma-content">You are the CISO preparing a briefing for the Board of Directors.
+
+Context: A data exfiltration incident occurred at 02:30. Approximately 12,000 customer records were accessed — including names, email addresses, and partial card data (last 4 digits only, no full PANs). The incident is now contained. The Board meets at 09:00.
+
+Task: Convert the attached SOC incident summary into a Board-level communication structured as follows:
+1. HEADLINE — What happened and current status (1 sentence, calm and factual)
+2. WHAT WAS AFFECTED — Data types, volume, customer impact (plain language — no technical jargon)
+3. OUR RESPONSE — Timeline of detection, containment, and actions taken overnight
+4. REGULATORY POSITION — GDPR 72-hour notification obligation status; whether PCI DSS notification is triggered (hint: partial card data threshold)
+5. RESIDUAL RISK — What is still being investigated or monitored
+6. DECISIONS REQUIRED FROM THE BOARD — Be specific (budget, external counsel, regulator notification sign-off)
+
+Constraints:
+- Tone: Calm, authoritative, action-first. No panic language.
+- No technical acronyms without explanation
+- Do not speculate on attacker identity or motive without evidence
+- Maximum 280 words
+
+Do not start with "I" or "The incident was…" — lead with the most important fact.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     STATION 3 — PROMPT DOCTOR
+════════════════════════════════════════ -->
+<div class="section" id="tab-doctor">
+  <div class="sec-head">
+    <div class="sec-tag">Station 03</div>
+    <div class="sec-title">Prompt Doctor</div>
+    <div class="sec-sub">Paste any security prompt. The Doctor analyses it against RCTF, constraint quality, hallucination risk, and data governance — then tells you exactly what to fix.</div>
+  </div>
+
+  <div class="pd-input">
+    <div class="pd-bar"><div class="pob-dot" style="background:var(--orange)"></div><div class="pd-bar-label">PASTE YOUR PROMPT HERE</div></div>
+    <textarea id="pd-input-text" placeholder="Paste any prompt you've written or found…" rows="8"></textarea>
+  </div>
+  <div class="btn-row" style="margin-top:12px">
+    <button class="btn btn-primary" onclick="runDoctor()">Run Diagnosis</button>
+    <button class="btn btn-ghost" onclick="loadDoctorSample()">Load Sample (Weak Prompt)</button>
+    <button class="btn btn-ghost" onclick="document.getElementById('pd-input-text').value='';document.getElementById('pd-results').innerHTML=''">Clear</button>
+  </div>
+
+  <div id="pd-results" class="pd-results" style="margin-top:18px"></div>
+
+  <hr class="divider"/>
+
+  <!-- WEAK vs STRONG COMPARE EXAMPLES -->
+  <div class="sec-tag" style="margin-bottom:12px">Reference — Weak vs Strong Patterns</div>
+  <div class="compare-grid">
+    <div class="compare-box">
+      <div class="compare-head ch-weak">❌ Weak Prompt Patterns</div>
+      <div class="compare-content">Summarise the alerts.
+
+Tell me if this is a phishing email.
+
+What are the risks?
+
+Analyse the logs and flag anything suspicious.
+
+Is this a threat?</div>
+    </div>
+    <div class="compare-box">
+      <div class="compare-head ch-strong">✓ What Makes Them Strong — Add These</div>
+      <div class="compare-content">+ Role: "You are a [expert role]..."
++ Context: system, timeframe, data source
++ Task: specific decision or output required
++ Format: table / paragraph / JSON / bullets
++ Constraint: scope, tone, accuracy rule
++ Anchor: paste or reference actual data</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     STATION 4 — HALLUCINATION QUIZ
+════════════════════════════════════════ -->
+<div class="section" id="tab-hallucinations">
+  <div class="sec-head">
+    <div class="sec-tag">Station 04</div>
+    <div class="sec-title">Hallucination Risk Quiz</div>
+    <div class="sec-sub">AI makes things up — confidently. Can you spot when to trust the output and when to verify? 6 real-world scenarios.</div>
+  </div>
+
+  <div class="quiz-score-bar">
+    <div class="qs-num" id="quiz-correct">0</div>
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:.1em;font-weight:600">CORRECT</div>
+      <div class="qs-label">out of <span id="quiz-answered">0</span> answered</div>
+    </div>
+    <div style="margin-left:auto"><button class="btn btn-ghost" onclick="resetQuiz()">Reset Quiz</button></div>
+  </div>
+
+  <!-- Q1 -->
+  <div class="quiz-item" id="q1">
+    <div class="quiz-q">You ask Copilot to analyse a suspicious file and it responds: <em>"This file hash matches <span class='suspect'>CVE-2024-38112</span>, a known Windows MSHTML vulnerability. Severity: CVSS 9.8 (Critical). Patch available since July 2024."</em> What do you do?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answerQ(1,'a',false,this)"><span class="opt-key">A</span>Trust it — the CVE number and CVSS score look specific and credible.</div>
+      <div class="quiz-opt" data-correct="1" onclick="answerQ(1,'b',true,this)"><span class="opt-key">B</span>Verify the CVE on NVD and confirm the hash actually matches before acting — AI can fabricate convincing CVE IDs.</div>
+      <div class="quiz-opt" onclick="answerQ(1,'c',false,this)"><span class="opt-key">C</span>AI can't analyse file hashes at all.</div>
+    </div>
+    <div class="quiz-explain" id="q1-explain">CVE-2024-38112 is real — but AI can and does generate plausible-looking CVE IDs that don't exist, or incorrectly attribute a hash to a real CVE. Always cross-reference on NVD or VirusTotal before using in a brief or making a patch decision.</div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-item" id="q2">
+    <div class="quiz-q">You prompt Copilot to summarise a threat bulletin and it states: <em>"This campaign is attributed with <span class='suspect'>high confidence to APT29 (Cozy Bear)</span>, a Russian state-sponsored group known for targeting financial institutions."</em> The bulletin itself says attribution is "suspected but unconfirmed." What's the issue?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answerQ(2,'a',false,this)"><span class="opt-key">A</span>No issue — APT29 is a well-known group so the attribution is likely correct.</div>
+      <div class="quiz-opt" onclick="answerQ(2,'b',false,this)"><span class="opt-key">B</span>The issue is that Copilot should have named a different group.</div>
+      <div class="quiz-opt" data-correct="1" onclick="answerQ(2,'c',true,this)"><span class="opt-key">C</span>AI upgraded "suspected" to "high confidence" — a material misrepresentation that could affect regulatory reporting and leadership decisions.</div>
+    </div>
+    <div class="quiz-explain" id="q2-explain">This is a confidence hallucination — AI strips uncertainty from its source material and presents conclusions more definitively than the evidence supports. For attribution, always compare the AI output directly against the original source. Add the constraint: <em>"If attribution is uncertain in the source, preserve that uncertainty in your output."</em></div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-item" id="q3">
+    <div class="quiz-q">You ask Copilot to draft a policy clause and it includes: <em>"Under <span class='suspect'>Article 33(1) of GDPR</span>, organisations must notify the supervisory authority within <span class='suspect'>72 hours</span> of becoming aware of a personal data breach, unless the breach is unlikely to result in a risk to individuals."</em> How do you treat this?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answerQ(3,'a',false,this)"><span class="opt-key">A</span>Use it as-is — GDPR Article 33 is well-established and unlikely to be wrong.</div>
+      <div class="quiz-opt" data-correct="1" onclick="answerQ(3,'b',true,this)"><span class="opt-key">B</span>The substance is likely correct here, but any regulatory clause in a formal document must be verified against the official GDPR text and confirmed with Legal before use.</div>
+      <div class="quiz-opt" onclick="answerQ(3,'c',false,this)"><span class="opt-key">C</span>Reject it entirely — AI cannot reference legal documents accurately.</div>
+    </div>
+    <div class="quiz-explain" id="q3-explain">In this case, the AI is actually correct — Article 33(1) does say 72 hours. But AI can subtly paraphrase clauses, omit conditions, or cite incorrect article numbers with the same confident tone. Treat AI regulatory output as a helpful starting point — not a verified legal reference. Verify with Legal before including in any formal document.</div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="quiz-item" id="q4">
+    <div class="quiz-q">You ask Copilot to write a detection rule for your SIEM and it produces: <em>"Alert when EventID <span class='suspect'>4732</span> fires more than 3 times in 10 minutes from the same source — this indicates a password spray attack."</em> What's the risk?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answerQ(4,'a',false,this)"><span class="opt-key">A</span>None — EventID 4732 is a Windows security event and this looks like standard SIEM logic.</div>
+      <div class="quiz-opt" data-correct="1" onclick="answerQ(4,'b',true,this)"><span class="opt-key">B</span>EventID 4732 is actually "A member was added to a security-enabled local group" — not a login failure. The rule would never fire for password spray. Verify event IDs before implementing any detection logic.</div>
+      <div class="quiz-opt" onclick="answerQ(4,'c',false,this)"><span class="opt-key">C</span>The logic threshold is wrong — it should be 5 attempts, not 3.</div>
+    </div>
+    <div class="quiz-explain" id="q4-explain">The correct EventID for failed logons is 4625 (or 4771 for Kerberos pre-auth failures). EventID 4732 is completely unrelated. AI mixes up specific technical identifiers like EventIDs, port numbers, registry keys, and API names with convincing confidence. Always verify any specific technical identifier before implementing in production systems.</div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="quiz-item" id="q5">
+    <div class="quiz-q">You ask Copilot: <em>"Summarise the key findings from the ISAC report attached."</em> The report is 40 pages. Copilot returns a confident 5-bullet summary. What's the risk?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answerQ(5,'a',false,this)"><span class="opt-key">A</span>None — summarisation is exactly what AI is designed for and is reliable on long documents.</div>
+      <div class="quiz-opt" data-correct="1" onclick="answerQ(5,'b',true,this)"><span class="opt-key">B</span>AI may hallucinate details not in the report, drop critical caveats, or misrepresent nuanced findings. Spot-check 2–3 bullets directly against the source.</div>
+      <div class="quiz-opt" onclick="answerQ(5,'c',false,this)"><span class="opt-key">C</span>The risk is only that it may miss some findings — the findings it does include will be accurate.</div>
+    </div>
+    <div class="quiz-explain" id="q5-explain">AI summarisation is generally strong — but it can silently drop important caveats ("this was only observed in one environment"), merge findings incorrectly, or add plausible-sounding context that wasn't in the source. For high-stakes intelligence, always spot-check a few specific claims against the original before distributing the summary.</div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-item" id="q6">
+    <div class="quiz-q">To reduce hallucinations in a threat analysis prompt, which constraint is most effective?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answerQ(6,'a',false,this)"><span class="opt-key">A</span>"Be as detailed as possible and include all relevant context you know."</div>
+      <div class="quiz-opt" onclick="answerQ(6,'b',false,this)"><span class="opt-key">B</span>"Only respond with information you are 100% certain about."</div>
+      <div class="quiz-opt" data-correct="1" onclick="answerQ(6,'c',true,this)"><span class="opt-key">C</span>"Only use information from the data I have provided. If something is uncertain or not in the source data, state that explicitly rather than inferring."</div>
+    </div>
+    <div class="quiz-explain" id="q6-explain">Option C is the gold standard. It grounds the AI in your provided data and explicitly instructs it to surface uncertainty rather than fill gaps confidently. Option A encourages the AI to draw on training data (which may be outdated or wrong). Option B sounds right but AI cannot reliably self-assess its own certainty — it needs the boundary defined by what data it's allowed to use.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     STATION 5 — CHEAT SHEET
+════════════════════════════════════════ -->
+<div class="section" id="tab-cheatsheet">
+  <div class="sec-head">
+    <div class="sec-tag">Station 05</div>
+    <div class="sec-title">Prompt Engineering Cheat Sheet</div>
+    <div class="sec-sub">Reference cards, copy-paste templates, and the constraint toolkit. Keep this tab open during your work sessions.</div>
+  </div>
+
+  <!-- RCTF MASTER TEMPLATE -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-label" style="color:var(--accent)">RCTF Master Template — Copy & Adapt</div>
+    <div class="template-box">
+      <button class="cheat-copy" onclick="copyTemplate('master',this)">Copy</button>
+<span class="t-r">[ROLE]</span> You are a [specific security expert role].
+
+<span class="t-c">[CONTEXT]</span> [Describe the situation: system, timeframe, data source, environment].
+
+<span class="t-t">[TASK]</span> [Exact action required — be specific about the decision or output].
+
+<span class="t-f">[FORMAT]</span> [Output structure: table / paragraph / JSON / bullets / max length].
+
+[CONSTRAINTS — include as needed]
+- Only use data provided — do not infer if information is missing, state that explicitly
+- [Scope constraint: system or timeframe boundary]
+- [Tone constraint: executive / technical / legal]
+- [Authority constraint: Tier-1 only / flag and escalate]</div>
+  </div>
+
+  <div class="cheat-grid">
+
+    <!-- CONSTRAINT TOOLKIT -->
+    <div class="cheat-card">
+      <div class="cheat-title" style="color:var(--yellow)">🔒 Constraint Toolkit</div>
+      <div class="cheat-row"><span class="cheat-key">Accuracy</span><span class="cheat-val">If data is insufficient, state that — <strong>do not infer</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">Scope</span><span class="cheat-val">Only use data from <strong>[source / timeframe]</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">Tone</span><span class="cheat-val">Write for a <strong>non-technical executive audience</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">Authority</span><span class="cheat-val">Recommend only <strong>within Tier-1 analyst scope</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">Legal</span><span class="cheat-val">Flag patterns only — <strong>do not conclude on intent</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">Attribution</span><span class="cheat-val"><strong>Preserve uncertainty</strong> from the source — do not upgrade confidence</span></div>
+      <div class="cheat-row"><span class="cheat-key">Length</span><span class="cheat-val">Maximum <strong>200 words / 5 bullets</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">Hallucin.</span><span class="cheat-val">Do not cite CVEs, EventIDs, or clauses not in the provided data</span></div>
+    </div>
+
+    <!-- CHAIN OF THOUGHT TRIGGERS -->
+    <div class="cheat-card">
+      <div class="cheat-title" style="color:var(--orange)">🧠 Chain-of-Thought Triggers</div>
+      <div class="cheat-row"><span class="cheat-key">→</span><span class="cheat-val"><strong>"Walk me through your reasoning step by step before concluding."</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">→</span><span class="cheat-val"><strong>"Think through each event in sequence before giving a final assessment."</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">→</span><span class="cheat-val"><strong>"For each finding, show what evidence supports it and what would contradict it."</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">→</span><span class="cheat-val"><strong>"What would you need to see to change your conclusion?"</strong></span></div>
+      <div style="margin-top:12px;padding:10px 12px;background:rgba(255,122,53,.07);border-left:2px solid var(--orange);border-radius:0 3px 3px 0;font-size:.83rem;color:var(--text)">Use these for: attack path reconstruction, root cause analysis, risk quantification, any analysis where the reasoning must be auditable.</div>
+    </div>
+
+    <!-- DATA CLASSIFICATION REMINDER -->
+    <div class="cheat-card">
+      <div class="cheat-title" style="color:var(--green)">🔐 Data Classification (SG Policy)</div>
+      <div class="cheat-row"><span class="cheat-key" style="color:var(--green)">C1</span><span class="cheat-val"><strong>Public</strong> — ✓ Permitted in Copilot</span></div>
+      <div class="cheat-row"><span class="cheat-key" style="color:var(--green)">C2</span><span class="cheat-val"><strong>Internal</strong> — ✓ Permitted in Copilot</span></div>
+      <div class="cheat-row"><span class="cheat-key" style="color:var(--red)">C3</span><span class="cheat-val"><strong>Confidential</strong> — ✗ Not permitted without approval</span></div>
+      <div class="cheat-row"><span class="cheat-key" style="color:var(--red)">C4</span><span class="cheat-val"><strong>Restricted</strong> — ✗ Never in Copilot</span></div>
+      <div style="margin-top:12px;padding:10px 12px;background:rgba(0,232,135,.06);border-left:2px solid var(--green);border-radius:0 3px 3px 0;font-size:.83rem;color:var(--text)">When in doubt about classification: <strong>classify the data first, then decide whether to use Copilot.</strong></div>
+    </div>
+
+    <!-- HALLUCINATION QUICK CHECKLIST -->
+    <div class="cheat-card">
+      <div class="cheat-title" style="color:var(--red)">⚠ Before You Act on AI Output</div>
+      <div class="cheat-row"><span class="cheat-key">CVE</span><span class="cheat-val">Verify on <strong>NVD.nist.gov</strong> before any patch decision</span></div>
+      <div class="cheat-row"><span class="cheat-key">IOC</span><span class="cheat-val">Cross-check hashes on <strong>VirusTotal</strong> before SIEM rule</span></div>
+      <div class="cheat-row"><span class="cheat-key">Attribution</span><span class="cheat-val">Compare AI confidence against <strong>original source language</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">Legal</span><span class="cheat-val">Any regulatory clause → confirm with <strong>Legal / Compliance</strong></span></div>
+      <div class="cheat-row"><span class="cheat-key">EventID</span><span class="cheat-val">Verify Windows EventIDs on <strong>Microsoft Learn</strong> before deploy</span></div>
+      <div class="cheat-row"><span class="cheat-key">Summary</span><span class="cheat-val">Spot-check 2–3 bullets against <strong>original document</strong></span></div>
+    </div>
+
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- READY-TO-USE TEMPLATES -->
+  <div class="sec-tag" style="margin-bottom:14px">Ready-to-Use Templates</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.67rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:8px">Threat Intel Digest</div>
+      <div class="template-box" style="font-size:.76rem">
+        <button class="cheat-copy" onclick="copyTemplate('intel',this)">Copy</button>
+<span class="t-r">You are a senior threat intelligence analyst.</span>
+
+<span class="t-c">Environment: Financial Services. Stack: Azure AD, M365, [your stack]. Crown jewels: [list key systems].</span>
+
+<span class="t-t">Review the attached threat bulletins. For each: (1) Does it target our stack? (2) Attack vector? (3) Blast radius? (4) Recommended action?</span>
+
+<span class="t-f">One card per bulletin, max 5 lines. Urgency flag: 🔴🟡🟢</span>
+Constraint: If bulletin targets systems we don't run, mark NOT APPLICABLE.</div>
+    </div>
+
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.67rem;color:var(--orange);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:8px">Incident Executive Brief</div>
+      <div class="template-box" style="font-size:.76rem">
+        <button class="cheat-copy" onclick="copyTemplate('brief',this)">Copy</button>
+<span class="t-r">You are the CISO briefing the Board of Directors.</span>
+
+<span class="t-c">Regulated financial services org — GDPR and RBI apply. Below is the SOC incident summary.</span>
+
+<span class="t-t">Produce: (1) Headline (1 sentence) (2) Business impact (3) Response timeline (4) Current status (5) Board decisions required (6) One control being improved.</span>
+
+<span class="t-f">Calm. Authoritative. No jargon. Max 280 words.</span>
+Constraint: Do not speculate on attacker identity without evidence.</div>
+    </div>
+
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.67rem;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:8px">Alert Triage (Batch)</div>
+      <div class="template-box" style="font-size:.76rem">
+        <button class="cheat-copy" onclick="copyTemplate('triage',this)">Copy</button>
+<span class="t-r">You are a Tier-1 SOC analyst.</span>
+
+<span class="t-c">The following [N] Defender alerts fired in the last [X] hours across our Azure tenant.</span>
+
+<span class="t-t">For each alert: classify as True Positive / False Positive / Needs Investigation. Provide one-sentence reasoning.</span>
+
+<span class="t-f">Markdown table: Alert ID | Classification | Confidence | Reasoning</span>
+Constraint: Only use data in these alerts — do not reference external threat intel.</div>
+    </div>
+
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.67rem;color:var(--red);letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:8px">DLP Pre-Departure Review</div>
+      <div class="template-box" style="font-size:.76rem">
+        <button class="cheat-copy" onclick="copyTemplate('dlp',this)">Copy</button>
+<span class="t-r">You are a DLP analyst conducting a pre-departure access review.</span>
+
+<span class="t-c">User is leaving in [N] days. Attached is a [30]-day file access log export.</span>
+
+<span class="t-t">Identify: bulk downloads, out-of-scope access, after-hours activity, archive creation in personal storage.</span>
+
+<span class="t-f">Risk rating (High/Med/Low) + justification + evidence table.</span>
+Constraint: Flag patterns only. Do not conclude on intent. Neutral language — for HR and Legal review.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SCRIPT -->
+<script>
+// ── TAB SWITCHING ──
+function switchTab(id,el){
+  document.querySelectorAll('.tb-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── RCTF BUILDER ──
+const RCTF_COMPONENTS = {r:'Role',c:'Context',t:'Task',f:'Format'};
+function assemblePrompt(){
+  const r=document.getElementById('rctf-r').value.trim();
+  const c=document.getElementById('rctf-c').value.trim();
+  const t=document.getElementById('rctf-t').value.trim();
+  const f=document.getElementById('rctf-f').value.trim();
+  const con=document.getElementById('rctf-constraints').value.trim();
+  const el=document.getElementById('assembled-prompt');
+  const parts=[];
+  if(r) parts.push('[ROLE]\n'+r);
+  if(c) parts.push('\n[CONTEXT]\n'+c);
+  if(t) parts.push('\n[TASK]\n'+t);
+  if(f) parts.push('\n[FORMAT]\n'+f);
+  if(con) parts.push('\n[CONSTRAINTS]\n'+con);
+  if(parts.length===0){el.innerHTML='<span class="prompt-placeholder">Your assembled prompt will appear here as you fill in the fields above…</span>';updateScore(0,[]);return;}
+  el.textContent=parts.join('');
+  const filled=[r?'R':null,c?'C':null,t?'T':null,f?'F':null].filter(Boolean);
+  updateScore(filled.length,filled);
+}
+function updateScore(n,filled){
+  const pct=Math.round((n/4)*100);
+  document.getElementById('score-fill').style.width=pct+'%';
+  document.getElementById('score-pct').textContent=pct+'%';
+  const fill=document.getElementById('score-fill');
+  fill.style.background=pct<50?'var(--red)':pct<100?'var(--yellow)':'var(--green)';
+  const all=['R','C','T','F'];
+  document.getElementById('score-pills').innerHTML=all.map(k=>`<span class="score-pill ${filled.includes(k)?'sp-done':'sp-miss'}">${filled.includes(k)?'✓':'✗'} ${k==='R'?'Role':k==='C'?'Context':k==='T'?'Task':'Format'}</span>`).join('');
+}
+function copyAssembled(){
+  const txt=document.getElementById('assembled-prompt').textContent;
+  if(!txt||txt.includes('appear here')) return;
+  navigator.clipboard.writeText(txt);
+  const btn=document.getElementById('copy-assembled');
+  btn.textContent='Copied!';btn.classList.add('copied');
+  setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000);
+}
+function clearAll(){
+  ['rctf-r','rctf-c','rctf-t','rctf-f','rctf-constraints'].forEach(id=>document.getElementById(id).value='');
+  assemblePrompt();
+}
+const templates={
+  phishing:{r:'You are a phishing campaign analyst.',c:'The Security mailbox has received [N] forwarded suspicious emails over the past 48 hours. Employees report emails impersonating our IT helpdesk asking for credential verification.',t:'Identify common IOCs across these emails (sender domains, link patterns, urgency language). Classify the campaign type: Targeted / Broad Spray / Spear Phish.',f:'Summary paragraph (3 sentences) then a table: Indicator Type | Value | Frequency | Risk Signal',constraints:'Flag patterns only — do not assume breach without evidence\nIf data is insufficient to conclude, state that explicitly'},
+  intel:{r:'You are a senior threat intelligence analyst.',c:'Environment: Financial Services. Stack: Azure AD, M365, SAP ERP, GitHub Actions, Palo Alto VPN. Crown jewels: Customer PII, Trading platform, Core Banking.',t:'Review the attached threat bulletins. For each: (1) Does it target our stack? (2) Attack vector? (3) Blast radius? (4) Recommended action?',f:'One card per bulletin, max 5 lines. Urgency flag per bulletin: 🔴 🟡 🟢',constraints:'If a bulletin targets systems we do not run, mark NOT APPLICABLE — do not pad the analysis'},
+  incident:{r:'You are an incident response specialist.',c:'The following SIEM events occurred in a 6-hour window. [Paste events here]',t:'Reason through each event: (1) Attack stage (2) Most probable attacker objective (3) Critical detection failure point (4) Control that would have disrupted the chain earliest',f:'Show reasoning per step before your final assessment. Then a 3-sentence conclusion.',constraints:'Walk me through your reasoning step by step before concluding'},
+  policy:{r:'You are an ISO 27001 compliance analyst.',c:'Attached is our current [policy name]. Our organisation operates under GDPR and RBI guidelines.',t:'Identify gaps against NIST CSF 2.0 controls. For each gap, assess the risk if unaddressed.',f:'Table: Control ID | Gap Description | Risk if Unaddressed | Priority (High/Med/Low)',constraints:'Only reference controls relevant to a financial services context\nIf a section is compliant, state that — do not manufacture gaps'},
+  brief:{r:'You are the CISO briefing the Board of Directors.',c:'Regulated financial services — GDPR and RBI apply. Below is the SOC incident summary: [paste here]',t:'Produce a Board communication: (1) Headline (2) Business impact (3) Response timeline (4) Current status (5) Board decisions required (6) One control being improved',f:'Calm. Authoritative. No jargon. Max 280 words.',constraints:'Do not speculate on attacker identity without evidence\nDo not use technical acronyms without explanation'}
+};
+function loadTemplate(key){
+  const t=templates[key];
+  document.getElementById('rctf-r').value=t.r||'';
+  document.getElementById('rctf-c').value=t.c||'';
+  document.getElementById('rctf-t').value=t.t||'';
+  document.getElementById('rctf-f').value=t.f||'';
+  document.getElementById('rctf-constraints').value=t.constraints||'';
+  assemblePrompt();
+}
+
+// ── SCENARIO LAB ──
+function switchScenario(id,el){
+  document.querySelectorAll('.sc-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.scenario-body').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('sc-'+id).classList.add('active');
+}
+function checkScenario(id){
+  const val=document.getElementById('sc-'+id+'-input').value.trim();
+  const fb=document.getElementById('sc-'+id+'-feedback');
+  const fbtxt=document.getElementById('sc-'+id+'-fbtext');
+  if(!val){fbtxt.innerHTML='<span style="color:var(--red)">Please write your prompt first.</span>';fb.classList.add('visible');return;}
+  const vl=val.toLowerCase();
+  const hasRole=/you are|as a|acting as|role:/i.test(val);
+  const hasContext=/context:|situation:|background:|the following|last \d|over the|past \d|hours|days|alerts|emails|log/i.test(val);
+  const hasTask=/task:|identify|classify|analyse|analyze|review|determine|assess|find|extract|produce|write|summarise|summarize/i.test(val);
+  const hasFormat=/table|format:|return|output|bullet|paragraph|json|list|markdown|max \d|maximum/i.test(val);
+  const hasConstraint=/constraint|only use|do not|don't|flag only|must not|should not|neutral|legal|maximum \d words|max \d words/i.test(val);
+  const score=[hasRole,hasContext,hasTask,hasFormat,hasConstraint].filter(Boolean).length;
+  const pct=Math.round((score/5)*100);
+  let feedback=`<strong>Completeness: ${pct}% (${score}/5 elements detected)</strong><br/><br/>`;
+  feedback+=hasRole?'<span style="color:var(--green)">✓ Role defined</span>':'<span style="color:var(--red)">✗ Role missing — who is the AI? Add "You are a [expert]..."</span>';
+  feedback+='<br/>'+( hasContext?'<span style="color:var(--green)">✓ Context provided</span>':'<span style="color:var(--red)">✗ Context thin — add system, timeframe, or data source</span>');
+  feedback+='<br/>'+(hasTask?'<span style="color:var(--green)">✓ Task specified</span>':'<span style="color:var(--red)">✗ Task vague — what specific decision or output do you need?</span>');
+  feedback+='<br/>'+(hasFormat?'<span style="color:var(--green)">✓ Format requested</span>':'<span style="color:var(--orange)">⚠ Format not specified — add table / paragraph / max length</span>');
+  feedback+='<br/>'+(hasConstraint?'<span style="color:var(--green)">✓ Constraint included</span>':'<span style="color:var(--orange)">⚠ No constraints — consider adding scope or accuracy rules</span>');
+  if(score===5) feedback+='<br/><br/><span style="color:var(--green)">★ Strong prompt — all elements present. Compare with the model answer to see alternative approaches.</span>';
+  else if(score>=3) feedback+='<br/><br/>Good foundation. Add the missing elements to make this production-ready.';
+  else feedback+='<br/><br/>Keep building — focus on adding the missing elements above before comparing with the model.';
+  fbtxt.innerHTML=feedback;fb.classList.add('visible');
+}
+function toggleModel(id){
+  const m=document.getElementById('sc-'+id+'-model');
+  m.classList.toggle('visible');
+}
+function clearScenario(id){
+  document.getElementById('sc-'+id+'-input').value='';
+  document.getElementById('sc-'+id+'-feedback').classList.remove('visible');
+  const m=document.getElementById('sc-'+id+'-model');
+  if(m) m.classList.remove('visible');
+}
+
+// ── PROMPT DOCTOR ──
+function loadDoctorSample(){
+  document.getElementById('pd-input-text').value='Analyse these emails and tell me if they are phishing. Also check the logs.';
+  runDoctor();
+}
+function runDoctor(){
+  const val=document.getElementById('pd-input-text').value.trim();
+  const res=document.getElementById('pd-results');
+  if(!val){res.innerHTML='';return;}
+  const checks=[
+    {name:'Role (R)',pass:/you are|as a|acting as/i.test(val),pass_msg:'AI persona defined.',fail_msg:'No role assigned. Add: "You are a [expert role]…"',warn:false},
+    {name:'Context (C)',pass:/context:|situation:|the following|last \d|over the|past \d|hours|days|our|attached|below/i.test(val),pass_msg:'Context or data reference present.',fail_msg:'Context missing. Add: what system, timeframe, or data is involved?',warn:false},
+    {name:'Task (T)',pass:/identify|classify|analyse|analyze|review|determine|assess|find|extract|produce|write|summarise|summarize|tell me|check|flag|list/i.test(val),pass_msg:'Task instruction detected.',fail_msg:'Task too vague. Specify the exact decision or output needed.',warn:false},
+    {name:'Format (F)',pass:/table|format|return|output|bullet|paragraph|json|list|markdown|max \d|maximum|\d words/i.test(val),pass_msg:'Output format specified.',fail_msg:'No format specified. Add: table / paragraph / JSON / max N words.',warn:true},
+    {name:'Constraint',pass:/constraint|only use|do not|don't|flag only|must not|should not|neutral|maximum \d words|max \d words|only if|if uncertain/i.test(val),pass_msg:'At least one constraint present.',fail_msg:'No constraints. Consider: scope, accuracy, tone, or authority limits.',warn:true},
+    {name:'Hallucin. Guard',pass:/if uncertain|do not infer|only from|provided data|don't guess|don't infer|state that|not in the/i.test(val),pass_msg:'Hallucination constraint detected.',fail_msg:'No hallucination guard. Add: "If uncertain, state that — do not infer."',warn:true},
+    {name:'Data Grounding',pass:/attached|below|following|paste|provided|this log|this email|these alerts/i.test(val),pass_msg:'References provided data.',fail_msg:'Prompt asks AI to recall from memory rather than analyse provided data. Paste or reference actual data.',warn:true},
+  ];
+  res.innerHTML=checks.map(c=>{
+    const icon=c.pass?'icon-pass':c.warn?'icon-warn':'icon-fail';
+    const sym=c.pass?'✓':c.warn?'!':'✗';
+    const col=c.pass?'var(--green)':c.warn?'var(--yellow)':'var(--red)';
+    return `<div class="pd-result-row">
+      <div class="pd-icon ${icon}">${sym}</div>
+      <div class="pd-rname" style="color:${col}">${c.name}</div>
+      <div>
+        <div class="pd-rdesc">${c.pass?c.pass_msg:c.fail_msg}</div>
+      </div>
+    </div>`;
+  }).join('');
+  const score=checks.filter(c=>c.pass).length;
+  const pct=Math.round((score/checks.length)*100);
+  res.innerHTML+=`<div style="margin-top:14px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'var(--red)'}">OVERALL SCORE: ${score}/${checks.length} checks passed (${pct}%) — ${pct>=80?'Production-ready':pct>=50?'Good foundation — address the warnings above':'Needs significant improvement before use in security operations'}</div>`;
+}
+
+// ── HALLUCINATION QUIZ ──
+let quizAnswered=0,quizCorrect=0;
+function answerQ(qnum,opt,isCorrect,el){
+  const qEl=document.getElementById('q'+qnum);
+  if(qEl.dataset.answered) return;
+  qEl.dataset.answered='1';
+  quizAnswered++;
+  if(isCorrect){quizCorrect++;el.classList.add('selected-correct');}
+  else{
+    el.classList.add('selected-wrong');
+    qEl.querySelectorAll('.quiz-opt[data-correct="1"]').forEach(o=>o.classList.add('reveal-correct'));
+  }
+  document.getElementById('q'+qnum+'-explain').classList.add('visible');
+  document.getElementById('quiz-correct').textContent=quizCorrect;
+  document.getElementById('quiz-answered').textContent=quizAnswered;
+}
+function resetQuiz(){
+  quizAnswered=0;quizCorrect=0;
+  document.getElementById('quiz-correct').textContent='0';
+  document.getElementById('quiz-answered').textContent='0';
+  for(let i=1;i<=6;i++){
+    const q=document.getElementById('q'+i);
+    delete q.dataset.answered;
+    q.querySelectorAll('.quiz-opt').forEach(o=>o.className='quiz-opt');
+    document.getElementById('q'+i+'-explain').classList.remove('visible');
+  }
+}
+
+// ── CHEAT SHEET COPY ──
+const tplTexts={
+  master:`[ROLE] You are a [specific security expert role].
+
+[CONTEXT] [Describe the situation: system, timeframe, data source, environment].
+
+[TASK] [Exact action required — be specific about the decision or output].
+
+[FORMAT] [Output structure: table / paragraph / JSON / bullets / max length].
+
+[CONSTRAINTS]
+- Only use data provided — do not infer if information is missing, state that explicitly
+- [Scope constraint: system or timeframe boundary]
+- [Tone constraint: executive / technical / legal]
+- [Authority constraint: Tier-1 only / flag and escalate]`,
+  intel:`You are a senior threat intelligence analyst.
+
+Environment: Financial Services. Stack: Azure AD, M365, SAP ERP, GitHub Actions, Palo Alto VPN. Crown jewels: Customer PII, Trading platform, Core Banking.
+
+Review the attached threat bulletins. For each: (1) Does it target our stack? (2) Attack vector? (3) Blast radius? (4) Recommended action?
+
+Format: One card per bulletin, max 5 lines. Urgency flag: 🔴🟡🟢
+Constraint: If bulletin targets systems we don't run, mark NOT APPLICABLE.`,
+  brief:`You are the CISO briefing the Board of Directors.
+
+Regulated financial services — GDPR and RBI apply. Below is the SOC incident summary: [paste here]
+
+Produce a Board communication:
+1. Headline (1 sentence, calm and factual)
+2. Business impact (customer data, revenue, regulatory)
+3. Response timeline
+4. Current status
+5. Board decisions required
+6. One control being improved
+
+Constraint: Calm. Authoritative. No jargon. Max 280 words. Do not speculate on attacker identity without evidence.`,
+  triage:`You are a Tier-1 SOC analyst.
+
+The following [N] Defender alerts fired in the last [X] hours across our Azure tenant.
+
+For each alert: classify as True Positive / False Positive / Needs Investigation. Provide one-sentence reasoning.
+
+Format: Markdown table: Alert ID | Classification | Confidence | Reasoning
+Constraint: Only use data in these alerts — do not reference external threat intel.`,
+  dlp:`You are a DLP analyst conducting a pre-departure access review.
+
+User is leaving in [N] days. Attached is a [30]-day file access log export.
+
+Identify: bulk downloads, out-of-scope access, after-hours activity, archive creation in personal storage.
+
+Format: Risk rating (High/Med/Low) + justification + evidence table.
+Constraint: Flag patterns only. Do not conclude on intent. Neutral language — for HR and Legal review.`
+};
+function copyTemplate(key,el){
+  const txt=tplTexts[key];
+  if(!txt) return;
+  navigator.clipboard.writeText(txt);
+  if(el){el.textContent='Copied!';el.classList.add('copied');setTimeout(()=>{el.textContent='Copy';el.classList.remove('copied')},2000);}
+}
+</script>
+</body>
+</html>
